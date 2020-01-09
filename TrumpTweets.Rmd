@@ -1,0 +1,87 @@
+---
+title: "Trump's tweets"
+author: "Rawan Aloula"
+date: ""
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+#### Load rda file 
+```{r}
+
+load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
+
+dim(trump_tweets_df)
+colnames(trump_tweets_df)
+#head(trump_tweets_df,10)
+#tail(trump_tweets_df,10)
+
+```
+
+<br>
+
+
+#### Count tweets with hash tags 
+
+<br>
+
+Approach 1
+```{r}
+sum(grepl("#", trump_tweets_df$text))
+```
+<br>
+
+Approach 2
+```{r}
+library(stringr)
+sum(str_detect(trump_tweets_df$text, pattern = "#"))
+
+```
+
+<br>
+
+#### Return numeric values 
+
+<br>
+
+Approach 1
+```{r}
+trump_tweets_df$text %>%
+  gsub(pattern = "\\D", "",.) %>%         # replace all non numeric value with space
+  ifelse(.== "","NA",.) %>% 
+  #grep("\\d", ., value = TRUE) %>%       # return only the numeric (value of that column (remove empty raws)
+  head(.,10)
+
+#length = 723
+```
+
+<br>
+
+Approach 2
+```{r}
+
+head(str_extract_all(trump_tweets_df$text,"\\d+"),10)
+
+```
+
+<br>
+
+#### Replace "no" in all tweets with a new word of your choice "yes"
+
+```{r}
+
+# check how frequently the word "no" is used
+sum(grepl("no", trump_tweets_df$text))
+
+
+# replace it with "yes" 
+SayYes <- gsub("no", replacement = "yes", trump_tweets_df$text, ignore.case = TRUE)
+
+```
+

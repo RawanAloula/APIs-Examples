@@ -1,0 +1,145 @@
+---
+title: "blsAPI"
+author: "Rawan Aloula"
+date: " "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Part 2:
+Use the R script "APIs.R" in the course file folder to answer the following questions:
+
+#### Setup 
+```{r}
+
+#install "RCurl" package
+#install.packages('blsAPI')
+
+library(jsonlite)
+library(blsAPI)
+
+```
+
+<br>
+
+#### Return Manufacturing layoffs only (change industry code)
+
+
+```{r}
+
+
+# supply series identifier to pull data (initial pull is in JSON data)
+
+# N0007 pulls data for Manufacturing
+layoffs_json <- blsAPI('MLUMS00NN0007003') 
+
+```
+
+
+```{r}
+
+class(layoffs_json) # make sure the JSON data is in character format
+
+json_file <- fromJSON(layoffs_json) # convert from JSON into R object
+
+class(json_file)    # make sure the json data is in list format now
+
+#str(json_file)  # explore the data to identify the location of variable of interest
+```
+
+<br>
+
+####  Did the value of manufacturing layoffs increase or decrease each year?
+```{r}
+
+# extract data of intetest
+
+Mfc_data <- json_file$Results$series$data[[1]]
+
+head(Mfc_data,10)
+```
+
+
+```{r , message=FALSE}
+
+library(dplyr)
+
+# sum the layoffs per year
+
+agg_Mfc <- Mfc_data %>%
+  group_by(year) %>%
+  summarise(sum_layoff = sum(as.numeric(value)))
+
+
+# plot the results 
+plot(agg_Mfc$year, agg_Mfc$sum_layoff, xlab = "Year" , ylab = "layoffs",main = "Layoffs in manufacturing jobs for US", type ="l",col = "blue", xaxt="n")
+ticks<-c(2011,2012,2013)
+axis(1,at=ticks,labels=ticks)
+points(agg_Mfc$year, agg_Mfc$sum_layoff, pch = 19)
+
+
+```
+
+
+
+<br>
+
+#### Return manufacturing jobs data for New York state   
+
+```{r}
+
+# N0007 pulls data for Manufacturing
+# S36  pulls data for New York state
+
+layoffs_json2 <- blsAPI('MLUMS36NN0007003') 
+
+json_file2 <- fromJSON(layoffs_json2) #convert from JSON into R object
+
+#str(json_file2)
+```
+
+<br>
+
+
+```{r}
+
+Mfc_data_NYC <- json_file2$Results$series$data[[1]]
+
+head(Mfc_data_NYC$value,10)
+
+```
+
+
+```{r}
+
+# clean the value columns 
+
+Mfc_data_NYC$value <- gsub(pattern = "-", "0", Mfc_data_NYC$value)   
+
+head(Mfc_data_NYC)
+```
+
+
+#### Did the value of manufacturing layoffs increase or decrease in New York each year?
+
+```{r}
+
+# sum the layoffs per year
+
+agg_Mfc2 <- Mfc_data_NYC %>%
+  group_by(year) %>%
+  summarise(sum_layoff = sum(as.numeric(value)))
+
+# plot the results 
+plot(agg_Mfc2$year, agg_Mfc2$sum_layoff, xlab = "Year" , ylab = "layoffs", main = "Layoffs in manufacturing jobs for New York state",type ="l",col = "red", xaxt="n")
+ticks<-c(2011,2012,2013)
+axis(1,at=ticks,labels=ticks)
+points(agg_Mfc2$year, agg_Mfc2$sum_layoff, pch = 19)
+
+
+```
+
